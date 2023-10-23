@@ -1,25 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import Entrypage from './components/Entrypage';
+import Chatbot from './components/Chatbot';
+import Exitpage from './components/Exitpage';
 
-function App() {
+
+const App = () => {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+        <BrowserRouter> 
+          <Routes>
+            <Route path="/" element={<Entrypage />} />
+            <Route path="/chatbot" element={<Chatbot />} />
+            <Route path="/exit" element={<Exitpage />} />
+          </Routes>
+        </BrowserRouter>
     </div>
   );
-}
+};
 
 export default App;
