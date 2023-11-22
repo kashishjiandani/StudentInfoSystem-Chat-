@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 const Exitpage = () => {
   const studentInfo = useSelector((state) => state.student);
-  console.log(studentInfo)
+  // console.log(studentInfo)
 
   return (
     <div className="bg-gradient-to-r from-indigo-200 via-red-200 to-green-100 flex flex-col w-full items-center justify-center h-screen">

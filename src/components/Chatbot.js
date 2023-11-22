@@ -72,21 +72,51 @@ const CustomText =({handleUserResponse})=>{
   )
 }
 
+const RedirectBar = ({timer})=>{
+
+  const [displayTimer, setDisplayTimer] = useState(timer)
+
+  useEffect(() => {
+    if(timer){
+      let a = timer.split(":")
+      
+      // console.log(parseInt(a[2]))
+      // console.log("inside useeffect")
+     setDisplayTimer(parseInt(a[2]))
+    }
+  }, [timer])
+  
+return(
+  <HStack
+    alignSelf="center"
+    bg="pink.400"
+    paddingX="4"
+    paddingY="2"
+    cursor='pointer'
+    width={"full"}
+  >
+  <Text fontWeight='medium' textColor='white'>{`Redirecting in ${displayTimer} seconds...`}</Text>
+  </HStack>
+)
+}
+
 
 
 const Chatbot = () => {
+  const Ref = useRef();
   const divForScroll = useRef(null);
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
   const studentInfo = useSelector((state) => state.student);
-
+  let temp = 5;
   const [messages, setMessages] = useState([]);
   const [name, setName] = useState("");
-  const [age, setAge] = useState("");
+  const [age, setAge] = useState(0);
   const [slot, setSlot] = useState("");
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [timer, setTimer] = useState('00:00:05');
 
   const sendBotMessage = (message) => {
     setLoading(true);
@@ -130,7 +160,7 @@ const Chatbot = () => {
       { type: "user", text: formattedInput },
     ]);
 
-    console.log(userInput);
+    // console.log(userInput);
     if (step === 2) {
       sendBotMessage("Pick a slot!");
       setStep(3);
@@ -143,9 +173,10 @@ const Chatbot = () => {
       sendBotMessage("Enter your Age");
       setStep(5);
     } else if (step === 5) {
-      console.log(userInput, "age");
+      // console.log(userInput, "age");
       setAge(userInput);
-      sendBotMessage("Thank you. In 5 seconds, the bot will exit.");
+      setStep(6);
+      sendBotMessage("Thank you, the bot will exit in 5 seconds.");
 
       // Set student information in Redux store
       dispatch(
@@ -156,12 +187,103 @@ const Chatbot = () => {
         })
       );
 
+    
+      // let a = setInterval(() => {
+      //   temp = temp-1;
+      //   // console.log(temp,"temp");
+      //   // setTimer(temp);
+      //   // console.log(timer)
+      //   if(temp === 0) {
+      //     clearInterval(a);
+      //   }
+      // }, 1000);
+
       // Redirect to Page3 after 5 seconds
       setTimeout(() => {
         navigate("/exit");
-      }, 5000);
+        // console.log("exiting")
+      }, 8000);
+
+
+
+
     }
   };
+
+  useEffect(() => {
+    if(step===6 && !loading) {
+      onClickReset();
+    }
+  }, [step,loading])
+  
+
+  const getTimeRemaining = (e) => {
+    const total = Date.parse(e) - Date.parse(new Date());
+    const seconds = Math.floor((total / 1000) % 60);
+    const minutes = Math.floor((total / 1000 / 60) % 60);
+    const hours = Math.floor((total / 1000 / 60 / 60) % 24);
+    return {
+        total, hours, minutes, seconds
+    };
+}
+
+
+const startTimer = (e) => {
+    let { total, hours, minutes, seconds } 
+                = getTimeRemaining(e);
+    if (total >= 0) {
+
+        // update the timer
+        // check if less than 10 then we need to 
+        // add '0' at the beginning of the variable
+        setTimer(
+            (hours > 4 ? hours : '0' + hours) + ':' +
+            (minutes > 4 ? minutes : '0' + minutes) + ':'
+            + (seconds > 4 ? seconds : '0' + seconds)
+        )
+    }
+}
+
+const clearTimer = (e) => {
+
+    // If you adjust it you should also need to
+    // adjust the Endtime formula we are about
+    // to code next    
+    setTimer('00:00:05');
+
+    // If you try to remove this line the 
+    // updating of timer Variable will be
+    // after 1000ms or 1sec
+    if (Ref.current) clearInterval(Ref.current);
+    const id = setInterval(() => {
+        startTimer(e);
+    }, 1000)
+    Ref.current = id;
+}
+
+const getDeadTime = () => {
+    let deadline = new Date();
+
+    // This is where you need to adjust if 
+    // you entend to add more time
+    deadline.setSeconds(deadline.getSeconds() + 5);
+    return deadline;
+}
+
+const onClickReset = () => {
+  clearTimer(getDeadTime());
+}
+
+// We can use useEffect so that when the component
+// mount the timer will start as soon as possible
+
+// We put empty array to act as componentDid
+// mount only
+useEffect(() => {
+    clearTimer(getDeadTime());
+}, []);
+
+
 
   const formatUserInput = (input) => {
     const date = new Date(input);
@@ -189,11 +311,14 @@ const Chatbot = () => {
   };
   const { isOpen, onToggle } = useDisclosure();
 
+  // console.log("step:",step)
+
   return (
     <Box bgGradient='linear(to-r, cyan.100, red.100)'>
       <Container bg={'white'} h={'100vh'}>
         <VStack h={'100vh'} paddingY={"4"} paddingX={"2"}>
-        <HStack
+        {/* //menu navbar */}
+    <HStack
       boxShadow='lg'
       p={2}
       color="white"
@@ -214,6 +339,7 @@ const Chatbot = () => {
         onClick={onToggle}
       />
     </HStack>
+     {/* //menu navbar end */}
         <VStack h={'full'} w={'full'} overflowY={'auto'} css={{
                 "&::-webkit-scrollbar": {
                   display: "none",
@@ -228,6 +354,9 @@ const Chatbot = () => {
         ))} 
         <div ref={divForScroll}></div>
         </VStack>
+
+        {step === 6 && !loading && <RedirectBar timer={timer}/> }
+        
         {step === 3 && !loading && (
          <div style={{width:'100%'}}>
          <HStack>
